@@ -461,7 +461,7 @@ public partial class GraphicsDevice
         _pixelShaderDirty = false;
     }
 
-    private int SetUserVertexBuffer<T>(T[] vertexData, int vertexOffset, int vertexCount, VertexDeclaration vertexDecl)
+    private int SetUserVertexBuffer<T>(Span<T> vertexData, int vertexOffset, int vertexCount, VertexDeclaration vertexDecl)
         where T : struct
     {
         DynamicVertexBuffer buffer;
@@ -495,7 +495,7 @@ public partial class GraphicsDevice
         return startVertex;
     }
 
-    private int SetUserIndexBuffer<T>(T[] indexData, int indexOffset, int indexCount)
+    private int SetUserIndexBuffer<T>(Span<T> indexData, int indexOffset, int indexCount)
         where T : struct
     {
         DynamicIndexBuffer buffer;
@@ -559,7 +559,7 @@ public partial class GraphicsDevice
         MGG.GraphicsDevice_DrawIndexed(Handle, primitiveType, primitiveCount, startIndex, baseVertex);
     }
 
-    private unsafe  void PlatformDrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, VertexDeclaration vertexDeclaration, int vertexCount) where T : struct
+    private unsafe  void PlatformDrawUserPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, VertexDeclaration vertexDeclaration, int vertexCount) where T : struct
     {
         var startVertex = SetUserVertexBuffer(vertexData, vertexOffset, vertexCount, vertexDeclaration);
         ApplyState(true);
@@ -576,7 +576,7 @@ public partial class GraphicsDevice
         MGG.GraphicsDevice_Draw(Handle, primitiveType, vertexStart, vertexCount);
     }
 
-    private unsafe void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+    private unsafe void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<short> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
     {
         var indexCount = GetElementCountArray(primitiveType, primitiveCount);
         var startVertex = SetUserVertexBuffer(vertexData, vertexOffset, numVertices, vertexDeclaration);
@@ -586,7 +586,7 @@ public partial class GraphicsDevice
         MGG.GraphicsDevice_DrawIndexed(Handle, primitiveType, primitiveCount, startIndex, startVertex);
     }
 
-    private unsafe void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, int[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+    private unsafe void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<int> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
     {
         var indexCount = GetElementCountArray(primitiveType, primitiveCount);
         var startVertex = SetUserVertexBuffer(vertexData, vertexOffset, numVertices, vertexDeclaration);

@@ -3,6 +3,7 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Xna.Framework.Content
             input.Read(data, 0, dataSize);
 
             var buffer = new VertexBuffer(input.GetGraphicsDevice(), declaration, vertexCount, BufferUsage.None);
-            buffer.SetData(data, 0, dataSize);
+            buffer.SetData<byte>(data, 0, dataSize);
             ContentManager.ScratchBufferPool.Return(data);
             return buffer;
         }

@@ -258,7 +258,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     // ends up in Textures[0].
                     _device.Textures[0] = texture;
 
-                    _device.DrawUserIndexedPrimitives(
+                    _device.DrawUserIndexedPrimitives<VertexPositionColorTexture>(
                         PrimitiveType.TriangleList,
                         _vertexArray,
                         0,
@@ -272,7 +272,7 @@ namespace Microsoft.Xna.Framework.Graphics
             else
             {
                 // If no custom effect is defined, then simply render.
-                _device.DrawUserIndexedPrimitives(
+                _device.DrawUserIndexedPrimitives<VertexPositionColorTexture>(
                     PrimitiveType.TriangleList,
                     _vertexArray,
                     0,

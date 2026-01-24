@@ -113,7 +113,7 @@ namespace Microsoft.Xna.Framework.Graphics
         ///     </item>
         /// </list>
         /// </exception>
-        public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
+        public void SetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
         {
             base.SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, vertexStride, options);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <exception cref="ArgumentOutOfRangeException">
         /// The <paramref name="data"/> parameter is not the correct size for the amount of data requested.
         /// </exception>
-        public void SetData<T>(T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        public void SetData<T>(Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
             var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
             base.SetDataInternal<T>(0, data, startIndex, elementCount, elementSizeInBytes, options);

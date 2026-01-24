@@ -43,24 +43,21 @@ public partial class IndexBuffer
         dataHandle.Free();
     }
 
-    private unsafe void PlatformSetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+    private unsafe void PlatformSetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
     {
-        var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
-        var startBytes = startIndex * elementSizeInBytes;
-        var dataBytes = elementCount * elementSizeInBytes;
-        var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-        var dataPtr = (nint)(dataHandle.AddrOfPinnedObject().ToInt64() + startBytes);
+        var dataBytes = elementCount * ReflectionHelpers.FastSizeOf<T>();
 
-        // TODO: We need to figure out the correct behavior 
-        // for SetDataOptions.None on a dynamic buffer.
-        //
-        // For now we always discard as it is a pretty safe default.
-        //
-        var discard = _isDynamic && options != SetDataOptions.NoOverwrite;
+        fixed (T* dataPtr = data.Slice(startIndex, elementCount))
+        {
+            // TODO: We need to figure out the correct behavior 
+            // for SetDataOptions.None on a dynamic buffer.
+            //
+            // For now we always discard as it is a pretty safe default.
+            //
+            var discard = _isDynamic && options != SetDataOptions.NoOverwrite;
 
-        MGG.Buffer_SetData(GraphicsDevice.Handle, ref Handle, offsetInBytes, (byte*)dataPtr, 1, dataBytes, dataBytes, discard);
-
-        dataHandle.Free();
+            MGG.Buffer_SetData(GraphicsDevice.Handle, ref Handle, offsetInBytes, (byte*)dataPtr, 1, dataBytes, dataBytes, discard);
+        }
     }
 
     protected override void Dispose(bool disposing)

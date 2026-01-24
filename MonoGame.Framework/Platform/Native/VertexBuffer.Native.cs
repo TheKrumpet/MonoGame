@@ -96,23 +96,14 @@ public partial class VertexBuffer
         dataHandle.Free();
     }
 
-    private unsafe void PlatformSetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes)
+    private unsafe void PlatformSetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes)
     {
-        var startBytes = startIndex * elementSizeInBytes;
-        var dataBytes = elementCount * elementSizeInBytes;
-        var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-        var dataPtr = (nint)(dataHandle.AddrOfPinnedObject().ToInt64() + startBytes);
+        fixed (T* dataPtr = data.Slice(startIndex, elementCount))
+        {
+            var discard = _isDynamic && options != SetDataOptions.NoOverwrite;
 
-        // TODO: We need to figure out the correct behavior 
-        // for SetDataOptions.None on a dynamic buffer.
-        //
-        // For now we always discard as it is a pretty safe default.
-        //
-        var discard = _isDynamic && options != SetDataOptions.NoOverwrite;
-
-        MGG.Buffer_SetData(GraphicsDevice.Handle, ref Handle, offsetInBytes, (byte*)dataPtr, elementCount, vertexStride, elementSizeInBytes, discard);
-
-        dataHandle.Free();
+            MGG.Buffer_SetData(GraphicsDevice.Handle, ref Handle, offsetInBytes, (byte*)dataPtr, elementCount, vertexStride, elementSizeInBytes, discard);
+        }
     }
 
     private unsafe void PlatformSetData<T>(int offsetInBytes, Span<T> data, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes)

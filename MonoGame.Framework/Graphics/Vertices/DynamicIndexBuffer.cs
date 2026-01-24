@@ -93,7 +93,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
         /// <param name="elementCount">The number of elements to copy.</param>
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
-        public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        public void SetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
             base.SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, options);
         }
@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
         /// <param name="elementCount">The number of elements to copy.</param>
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
-        public void SetData<T>(T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        public void SetData<T>(Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
             base.SetDataInternal<T>(0, data, startIndex, elementCount, options);
         }

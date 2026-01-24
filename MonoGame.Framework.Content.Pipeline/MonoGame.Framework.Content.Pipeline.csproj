@@ -57,12 +57,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MonoGame.Framework\MonoGame.Framework.DesktopGL.csproj">
-      <PrivateAssets>All</PrivateAssets>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AssimpNetter" Version="6.0.5.0" ExcludeAssets="native;build" />
     <PackageReference Include="MonoGame.Library.Assimp" Version="6.0.5.1" />
     <PackageReference Include="BCnEncoder.Net" Version="2.1.0" />
@@ -112,6 +106,24 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MonoGame.Framework\MonoGame.Framework.Native.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- NU5100 - NuGet warns if we copy assemblies but don't reference them; we suppress those warnings. -->
+    <!-- CS1591 - Disable XML documentation warnings. -->
+    <NoWarn>NU5100;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
   
   <Import Project="..\external\CppNet\CppNet.targets" />
 

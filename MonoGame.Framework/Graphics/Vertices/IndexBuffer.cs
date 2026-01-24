@@ -286,7 +286,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
-        protected void SetDataInternal<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        protected void SetDataInternal<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
             if (data == null)
                 throw new ArgumentNullException("data");

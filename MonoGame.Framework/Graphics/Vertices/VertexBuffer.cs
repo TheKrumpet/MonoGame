@@ -202,7 +202,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// when they are copied into the vertex buffer.
         /// </para>
         /// </remarks>
-        public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride) where T : struct
+        public void SetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride) where T : struct
         {
             SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, vertexStride, SetDataOptions.None);
         }
@@ -220,7 +220,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="elementCount">Number of elements to copy from <paramref name="data"/>.
         /// The combination of <paramref name="startIndex"/> and <paramref name="elementCount"/>
         /// must be within the <paramref name="data"/> array bounds.</param>
-        public void SetData<T>(T[] data, int startIndex, int elementCount) where T : struct
+		public void SetData<T>(Span<T> data, int startIndex, int elementCount) where T : struct
         {
             var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
             SetDataInternal<T>(0, data, startIndex, elementCount, elementSizeInBytes, SetDataOptions.None);
@@ -234,14 +234,14 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <typeparam name="T">Type of elements in the data array.</typeparam>
         /// <param name="data">Data array to be passed to the shader.</param>
         /// <inheritdoc cref="SetData{T}(int, T[], int, int, int)" path="/remarks"/>
-        public void SetData<T>(T[] data) where T : struct
+        public void SetData<T>(Span<T> data) where T : struct
         {
             var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
             SetDataInternal<T>(0, data, 0, data.Length, elementSizeInBytes, SetDataOptions.None);
         }
 
         /// <summary/>
-        protected void SetDataInternal<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
+        protected void SetDataInternal<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
         {
             if (data == null)
                 throw new ArgumentNullException("data");

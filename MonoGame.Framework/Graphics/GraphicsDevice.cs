@@ -1272,7 +1272,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="primitiveCount">The number of primitives to draw.</param>
         /// <remarks>The <see cref="VertexDeclaration"/> will be found by getting <see cref="IVertexType.VertexDeclaration"/>
         /// from an instance of <typeparamref name="T"/> and cached for subsequent calls.</remarks>
-        public void DrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int primitiveCount) where T : struct, IVertexType
+        public void DrawUserPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int primitiveCount) where T : struct, IVertexType
         {
             DrawUserPrimitives(primitiveType, vertexData, vertexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
         }
@@ -1286,7 +1286,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="vertexOffset">The index in the array of the first vertex that should be rendered.</param>
         /// <param name="primitiveCount">The number of primitives to draw.</param>
         /// <param name="vertexDeclaration">The layout of the vertices.</param>
-        public void DrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+        public void DrawUserPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
             if (vertexData == null)
                 throw new ArgumentNullException("vertexData");
@@ -1364,7 +1364,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <remarks>All indices in the vertex buffer are interpreted relative to the specified <paramref name="vertexOffset"/>.
         /// For example a value of zero in the array of indices points to the vertex at index <paramref name="vertexOffset"/>
         /// in the array of vertices.</remarks>
-        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount) where T : struct, IVertexType
+        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<short> indexData, int indexOffset, int primitiveCount) where T : struct, IVertexType
         {
             DrawUserIndexedPrimitives<T>(primitiveType, vertexData, vertexOffset, numVertices, indexData, indexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
         }
@@ -1384,7 +1384,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <remarks>All indices in the vertex buffer are interpreted relative to the specified <paramref name="vertexOffset"/>.
         /// For example a value of zero in the array of indices points to the vertex at index <paramref name="vertexOffset"/>
         /// in the array of vertices.</remarks>
-        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<short> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
             // These parameter checks are a duplicate of the checks in the int[] overload of DrawUserIndexedPrimitives.
             // Inlined here for efficiency.
@@ -1444,7 +1444,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <remarks>All indices in the vertex buffer are interpreted relative to the specified <paramref name="vertexOffset"/>.
         /// For example a value of zero in the array of indices points to the vertex at index <paramref name="vertexOffset"/>
         /// in the array of vertices.</remarks>
-        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, int[] indexData, int indexOffset, int primitiveCount) where T : struct, IVertexType
+        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<int> indexData, int indexOffset, int primitiveCount) where T : struct, IVertexType
         {
             DrawUserIndexedPrimitives<T>(primitiveType, vertexData, vertexOffset, numVertices, indexData, indexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
         }
@@ -1464,7 +1464,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <remarks>All indices in the vertex buffer are interpreted relative to the specified <paramref name="vertexOffset"/>.
         /// For example value of zero in the array of indices points to the vertex at index <paramref name="vertexOffset"/>
         /// in the array of vertices.</remarks>
-        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, int[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+        public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<int> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
             // These parameter checks are a duplicate of the checks in the short[] overload of DrawUserIndexedPrimitives.
             // Inlined here for efficiency.

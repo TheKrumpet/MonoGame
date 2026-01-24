@@ -4711,7 +4711,7 @@ MGG_RasterizerState* MGG_RasterizerState_Create(MGG_GraphicsDevice* device, MGG_
 	rasterizer.depthBiasConstantFactor = info->depthBias * ((1 << 24) - 1);
 	rasterizer.depthBiasClamp = 0.0f;
 	rasterizer.depthBiasSlopeFactor = info->slopeScaleDepthBias;
-	rasterizer.lineWidth = 1.0f;
+	rasterizer.lineWidth = 4.0f;
 
 	// These don't fit this structure, so we
 	// need to hold them for later.

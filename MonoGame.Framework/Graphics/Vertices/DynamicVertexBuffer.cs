@@ -113,9 +113,56 @@ namespace Microsoft.Xna.Framework.Graphics
         ///     </item>
         /// </list>
         /// </exception>
+        public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
+        {
+            SetData(offsetInBytes, data.AsSpan(), startIndex, elementCount, vertexStride, options);
+        }
+
+        /// <summary>
+        /// Copies array data to the vertex buffer.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="offsetInBytes">Number of bytes into the vertex buffer where copying will start.</param>
+        /// <param name="data">The array of data to copy.</param>
+        /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
+        /// <param name="elementCount">The number of elements to copy.</param>
+        /// <param name="vertexStride">The size, in bytes, of the elements in the vertex buffer.</param>
+        /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="data"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// One of the following conditions is true:
+        /// <list type="bullet">
+        ///     <item>
+        ///         <description>The <paramref name="vertexStride"/> parameter larger than the vertex buffer size.</description>
+        ///     </item>
+        ///     <item>
+        ///         <description>The <paramref name="vertexStride"/> parameter is less than the size of the specified data.</description>
+        ///     </item>
+        ///     <item>
+        ///         <description>The <paramref name="data"/> parameter is not the correct size for the amount of data requested.</description>
+        ///     </item>
+        /// </list>
+        /// </exception>
         public void SetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
         {
             base.SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, vertexStride, options);
+        }
+
+        /// <summary>
+        /// Copies array data to the vertex buffer.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="data">The array of data to copy.</param>
+        /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
+        /// <param name="elementCount">The number of elements to copy.</param>
+        /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="data"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The <paramref name="data"/> parameter is not the correct size for the amount of data requested.
+        /// </exception>
+        public void SetData<T>(T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        {
+            SetData(data.AsSpan(), startIndex, elementCount);
         }
 
         /// <summary>

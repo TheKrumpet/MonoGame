@@ -237,7 +237,7 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         /// <summary>
-        ///
+        /// Copies array data to the index buffer.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="offsetInBytes"></param>
@@ -245,6 +245,19 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="startIndex"></param>
         /// <param name="elementCount"></param>
         public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount) where T : struct
+        {
+            SetData(offsetInBytes, data.AsSpan(), startIndex, elementCount);
+        }
+
+        /// <summary>
+        /// Copies array data to the index buffer.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="offsetInBytes"></param>
+        /// <param name="data"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="elementCount"></param>
+        public void SetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount) where T : struct
         {
             SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, SetDataOptions.None);
         }
@@ -258,10 +271,24 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="elementCount">The number of elements to copy.</param>
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
-		public void SetData<T>(T[] data, int startIndex, int elementCount) where T : struct
+        public void SetData<T>(T[] data, int startIndex, int elementCount) where T : struct
+        {
+            SetData(data.AsSpan(), startIndex, elementCount);
+        }
+
+        /// <summary>
+        /// Copies array data to the index buffer.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="data">The array of data to copy.</param>
+        /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
+        /// <param name="elementCount">The number of elements to copy.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
+		public void SetData<T>(Span<T> data, int startIndex, int elementCount) where T : struct
         {
             SetDataInternal<T>(0, data, startIndex, elementCount, SetDataOptions.None);
-		}
+        }
 
         /// <summary>
         /// Copies array data to the index buffer.
@@ -271,6 +298,18 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
         public void SetData<T>(T[] data) where T : struct
+        {
+            SetData(data.AsSpan());
+        }
+
+        /// <summary>
+        /// Copies array data to the index buffer.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="data">The array of data to copy.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
+        public void SetData<T>(Span<T> data) where T : struct
         {
             SetDataInternal<T>(0, data, 0, data.Length, SetDataOptions.None);
         }

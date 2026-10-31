@@ -93,9 +93,44 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
         /// <param name="elementCount">The number of elements to copy.</param>
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
+        public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        {
+            base.SetDataInternal<T>(offsetInBytes, data.AsSpan(), startIndex, elementCount, options);
+        }
+
+        /// <summary>
+        /// Copies array data to the index buffer.
+        /// </summary>
+        /// <remarks>
+        /// An <see cref="InvalidOperationException"/> is thrown if an attempt is made to modify (for example, calls to
+        /// the <b>SetData</b> method) a resource that is currently set on a graphics device.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="offsetInBytes">Number of bytes into the index buffer where copying will start.</param>
+        /// <param name="data">The array of data to copy.</param>
+        /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
+        /// <param name="elementCount">The number of elements to copy.</param>
+        /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
         public void SetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
             base.SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, options);
+        }
+
+        /// <summary>
+        /// Copies array data to the index buffer.
+        /// </summary>
+        /// <remarks>
+        /// An <see cref="InvalidOperationException"/> is thrown if an attempt is made to modify (for example, calls to
+        /// the <b>SetData</b> method) a resource that is currently set on a graphics device.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="data">The array of data to copy.</param>
+        /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
+        /// <param name="elementCount">The number of elements to copy.</param>
+        /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
+        public void SetData<T>(T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        {
+            base.SetDataInternal<T>(0, data.AsSpan(), startIndex, elementCount, options);
         }
 
         /// <summary>

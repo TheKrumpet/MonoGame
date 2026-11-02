@@ -1274,7 +1274,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// from an instance of <typeparamref name="T"/> and cached for subsequent calls.</remarks>
         public void DrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int primitiveCount) where T : struct, IVertexType
         {
-            DrawUserPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, primitiveCount);
+            DrawUserPrimitives(primitiveType, vertexData, vertexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
         }
 
         /// <summary>
@@ -1303,7 +1303,36 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="vertexDeclaration">The layout of the vertices.</param>
         public void DrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
-            DrawUserPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, primitiveCount, vertexDeclaration);
+            if (vertexData == null)
+                throw new ArgumentNullException("vertexData");
+
+            if (vertexData.Length == 0)
+                throw new ArgumentOutOfRangeException("vertexData");
+
+            if (vertexOffset < 0 || vertexOffset >= vertexData.Length)
+                throw new ArgumentOutOfRangeException("vertexOffset");
+
+            if (primitiveCount <= 0)
+                throw new ArgumentOutOfRangeException("primitiveCount");
+
+            var vertexCount = GetElementCountArray(primitiveType, primitiveCount);
+
+            if (vertexOffset + vertexCount > vertexData.Length)
+                throw new ArgumentOutOfRangeException("primitiveCount");
+
+            if (vertexDeclaration == null)
+                throw new ArgumentNullException("vertexDeclaration");
+
+            if (vertexDeclaration.VertexStride < ReflectionHelpers.FastSizeOf<T>())
+                throw new ArgumentOutOfRangeException("vertexDeclaration", "Vertex stride of vertexDeclaration should be at least as big as the stride of the actual vertices.");
+
+            PlatformDrawUserPrimitives<T>(primitiveType, vertexData, vertexOffset, vertexDeclaration, vertexCount);
+
+            unchecked
+            {
+                _graphicsMetrics._drawCount++;
+                _graphicsMetrics._primitiveCount += primitiveCount;
+            }
         }
 
         /// <summary>
@@ -1395,7 +1424,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// in the array of vertices.</remarks>
         public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount) where T : struct, IVertexType
         {
-            DrawUserIndexedPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, numVertices, indexData.AsSpan(), indexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
+            DrawUserIndexedPrimitives(primitiveType, vertexData, vertexOffset, numVertices, indexData, indexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
         }
 
         /// <summary>
@@ -1436,7 +1465,46 @@ namespace Microsoft.Xna.Framework.Graphics
         /// in the array of vertices.</remarks>
         public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
-            DrawUserIndexedPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, numVertices, indexData.AsSpan(), indexOffset, primitiveCount, vertexDeclaration);
+            // These parameter checks are a duplicate of the checks in the int[] overload of DrawUserIndexedPrimitives.
+            // Inlined here for efficiency.
+
+            if (vertexData == null || vertexData.Length == 0)
+                throw new ArgumentNullException("vertexData");
+
+            if (vertexOffset < 0 || vertexOffset >= vertexData.Length)
+                throw new ArgumentOutOfRangeException("vertexOffset");
+
+            if (numVertices <= 0 || numVertices > vertexData.Length)
+                throw new ArgumentOutOfRangeException("numVertices");
+
+            if (vertexOffset + numVertices > vertexData.Length)
+                throw new ArgumentOutOfRangeException("numVertices");
+
+            if (indexData == null || indexData.Length == 0)
+                throw new ArgumentNullException("indexData");
+
+            if (indexOffset < 0 || indexOffset >= indexData.Length)
+                throw new ArgumentOutOfRangeException("indexOffset");
+
+            if (primitiveCount <= 0)
+                throw new ArgumentOutOfRangeException("primitiveCount");
+
+            if (indexOffset + GetElementCountArray(primitiveType, primitiveCount) > indexData.Length)
+                throw new ArgumentOutOfRangeException("primitiveCount");
+
+            if (vertexDeclaration == null)
+                throw new ArgumentNullException("vertexDeclaration");
+
+            if (vertexDeclaration.VertexStride < ReflectionHelpers.FastSizeOf<T>())
+                throw new ArgumentOutOfRangeException("vertexDeclaration", "Vertex stride of vertexDeclaration should be at least as big as the stride of the actual vertices.");
+
+            PlatformDrawUserIndexedPrimitives<T>(primitiveType, vertexData, vertexOffset, numVertices, indexData, indexOffset, primitiveCount, vertexDeclaration);
+
+            unchecked
+            {
+                _graphicsMetrics._drawCount++;
+                _graphicsMetrics._primitiveCount += primitiveCount;
+            }
         }
 
         /// <summary>
@@ -1516,7 +1584,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// in the array of vertices.</remarks>
         public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, int[] indexData, int indexOffset, int primitiveCount) where T : struct, IVertexType
         {
-            DrawUserIndexedPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, numVertices, indexData.AsSpan(), indexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
+            DrawUserIndexedPrimitives(primitiveType, vertexData, vertexOffset, numVertices, indexData, indexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
         }
 
         /// <summary>
@@ -1557,7 +1625,46 @@ namespace Microsoft.Xna.Framework.Graphics
         /// in the array of vertices.</remarks>
         public void DrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, int[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
-            DrawUserIndexedPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, numVertices, indexData.AsSpan(), indexOffset, primitiveCount, vertexDeclaration);
+            // These parameter checks are a duplicate of the checks in the short[] overload of DrawUserIndexedPrimitives.
+            // Inlined here for efficiency.
+
+            if (vertexData == null || vertexData.Length == 0)
+                throw new ArgumentNullException("vertexData");
+
+            if (vertexOffset < 0 || vertexOffset >= vertexData.Length)
+                throw new ArgumentOutOfRangeException("vertexOffset");
+
+            if (numVertices <= 0 || numVertices > vertexData.Length)
+                throw new ArgumentOutOfRangeException("numVertices");
+
+            if (vertexOffset + numVertices > vertexData.Length)
+                throw new ArgumentOutOfRangeException("numVertices");
+
+            if (indexData == null || indexData.Length == 0)
+                throw new ArgumentNullException("indexData");
+
+            if (indexOffset < 0 || indexOffset >= indexData.Length)
+                throw new ArgumentOutOfRangeException("indexOffset");
+
+            if (primitiveCount <= 0)
+                throw new ArgumentOutOfRangeException("primitiveCount");
+
+            if (indexOffset + GetElementCountArray(primitiveType, primitiveCount) > indexData.Length)
+                throw new ArgumentOutOfRangeException("primitiveCount");
+
+            if (vertexDeclaration == null)
+                throw new ArgumentNullException("vertexDeclaration");
+
+            if (vertexDeclaration.VertexStride < ReflectionHelpers.FastSizeOf<T>())
+                throw new ArgumentOutOfRangeException("vertexDeclaration", "Vertex stride of vertexDeclaration should be at least as big as the stride of the actual vertices.");
+
+            PlatformDrawUserIndexedPrimitives<T>(primitiveType, vertexData, vertexOffset, numVertices, indexData, indexOffset, primitiveCount, vertexDeclaration);
+
+            unchecked
+            {
+                _graphicsMetrics._drawCount++;
+                _graphicsMetrics._primitiveCount += primitiveCount;
+            }
         }
 
         /// <summary>

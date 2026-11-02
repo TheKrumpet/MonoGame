@@ -2,8 +2,9 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System;
 using MonoGame.Framework.Utilities;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -246,7 +247,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="elementCount"></param>
         public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount) where T : struct
         {
-            SetData(offsetInBytes, data.AsSpan(), startIndex, elementCount);
+            SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, SetDataOptions.None);
         }
 
         /// <summary>
@@ -273,7 +274,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
         public void SetData<T>(T[] data, int startIndex, int elementCount) where T : struct
         {
-            SetData(data.AsSpan(), startIndex, elementCount);
+            SetDataInternal<T>(0, data, startIndex, elementCount, SetDataOptions.None);
         }
 
         /// <summary>
@@ -299,7 +300,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
         public void SetData<T>(T[] data) where T : struct
         {
-            SetData(data.AsSpan());
+            if (data == null)
+                throw new ArgumentNullException("data");
+
+            SetDataInternal<T>(0, data, 0, data.Length, SetDataOptions.None);
         }
 
         /// <summary>
@@ -307,8 +311,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         /// <typeparam name="T">The type of elements in the array.</typeparam>
         /// <param name="data">The array of data to copy.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
-        /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
         public void SetData<T>(Span<T> data) where T : struct
         {
             SetDataInternal<T>(0, data, 0, data.Length, SetDataOptions.None);
@@ -324,13 +327,49 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="elementCount">The number of elements to copy.</param>
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
-        /// <exception cref="InvalidOperationException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="startIndex"/> is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="elementCount"/> is 0 or negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
+        protected void SetDataInternal<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                throw new ArgumentException($"Index type {typeof(T).Name} contains non-primitive or non-blittable data. This usually means the type contains class references.", nameof(data));
+
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (elementCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(elementCount));
+            if (data.Length < (startIndex + elementCount))
+                throw new ArgumentOutOfRangeException(nameof(data), "The array specified in the data parameter is not the correct size for the amount of data requested.");
+
+            PlatformSetData<T>(offsetInBytes, data, startIndex, elementCount, options);
+        }
+
+        /// <summary>
+        /// Copies array data to the index buffer.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the array.</typeparam>
+        /// <param name="offsetInBytes">Number of bytes into the index buffer where copying will start.</param>
+        /// <param name="data">The array of data to copy.</param>
+        /// <param name="startIndex">The index of the element in the array at which to start copying.</param>
+        /// <param name="elementCount">The number of elements to copy.</param>
+        /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="startIndex"/> is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="elementCount"/> is 0 or negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="data"/> is not the correct size for the amount of data requested.</exception>
         protected void SetDataInternal<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
-            if (data == null)
-                throw new ArgumentNullException("data");
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                throw new ArgumentException($"Index type {typeof(T).Name} contains non-primitive or non-blittable data. This usually means the type contains class references.", nameof(data));
+
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (elementCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(elementCount));
             if (data.Length < (startIndex + elementCount))
-                throw new InvalidOperationException("The array specified in the data parameter is not the correct size for the amount of data requested.");
+                throw new ArgumentOutOfRangeException(nameof(data), "The array specified in the data parameter is not the correct size for the amount of data requested.");
 
             PlatformSetData<T>(offsetInBytes, data, startIndex, elementCount, options);
         }

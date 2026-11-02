@@ -861,7 +861,7 @@ namespace Microsoft.Xna.Framework.Graphics
             SamplerStates.PlatformSetSamplers(this);
         }
 
-        private int SetUserVertexBuffer<T>(T[] vertexData, int vertexOffset, int vertexCount, VertexDeclaration vertexDecl)
+        private int SetUserVertexBuffer<T>(Span<T> vertexData, int vertexOffset, int vertexCount, VertexDeclaration vertexDecl)
             where T : struct
         {
             DynamicVertexBuffer buffer;
@@ -896,12 +896,12 @@ namespace Microsoft.Xna.Framework.Graphics
             return startVertex;
         }
 
-        private int SetUserIndexBuffer<T>(T[] indexData, int indexOffset, int indexCount)
+        private int SetUserIndexBuffer<T>(Span<T> indexData, int indexOffset, int indexCount)
             where T : struct
         {
             DynamicIndexBuffer buffer;
 
-            var indexSize = ReflectionHelpers.SizeOf<T>.Get();
+            var indexSize = ReflectionHelpers.FastSizeOf<T>();
             var indexElementSize = indexSize == 2 ? IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits;
 
             var requiredIndexCount = Math.Max(indexCount, 6000);
@@ -962,7 +962,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        private void PlatformDrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, VertexDeclaration vertexDeclaration, int vertexCount) where T : struct
+        private void PlatformDrawUserPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, VertexDeclaration vertexDeclaration, int vertexCount) where T : struct
         {
             var startVertex = SetUserVertexBuffer(vertexData, vertexOffset, vertexCount, vertexDeclaration);
 
@@ -986,7 +986,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        private void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+        private void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<short> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
             var indexCount = GetElementCountArray(primitiveType, primitiveCount);
             var startVertex = SetUserVertexBuffer(vertexData, vertexOffset, numVertices, vertexDeclaration);
@@ -1001,7 +1001,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        private void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int numVertices, int[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
+        private void PlatformDrawUserIndexedPrimitives<T>(PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<int> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration) where T : struct
         {
             var indexCount = GetElementCountArray(primitiveType, primitiveCount);
             var startVertex = SetUserVertexBuffer(vertexData, vertexOffset, numVertices, vertexDeclaration);

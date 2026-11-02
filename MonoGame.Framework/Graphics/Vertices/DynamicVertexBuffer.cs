@@ -115,7 +115,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </exception>
         public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
         {
-            SetData(offsetInBytes, data.AsSpan(), startIndex, elementCount, vertexStride, options);
+            base.SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, vertexStride, options);
         }
 
         /// <summary>
@@ -162,7 +162,8 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </exception>
         public void SetData<T>(T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
-            SetData(data.AsSpan(), startIndex, elementCount);
+            var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
+            base.SetDataInternal<T>(0, data, startIndex, elementCount, elementSizeInBytes, options);
         }
 
         /// <summary>

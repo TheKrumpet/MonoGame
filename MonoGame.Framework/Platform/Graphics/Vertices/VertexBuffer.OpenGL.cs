@@ -128,6 +128,27 @@ namespace Microsoft.Xna.Framework.Graphics
             });
         }
 
+        private void PlatformSetData<T>(
+            int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes)
+            where T : struct
+        {
+            // boo desktop gl threading
+            var arr = data.Slice(startIndex, elementCount).ToArray();
+
+            Threading.BlockOnUIThread(SetDataState<T>.Action, new SetDataState<T>
+            {
+                buffer = this,
+                offsetInBytes = offsetInBytes,
+                data = arr,
+                startIndex = 0,
+                elementCount = elementCount,
+                vertexStride = vertexStride,
+                options = options,
+                bufferSize = bufferSize,
+                elementSizeInBytes = elementSizeInBytes
+            });
+        }
+
         private void PlatformSetDataBody<T>(
             int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes)
             where T : struct

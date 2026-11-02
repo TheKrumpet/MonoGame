@@ -2,9 +2,10 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System;
 using MonoGame.Framework.Utilities;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -122,6 +123,9 @@ namespace Microsoft.Xna.Framework.Graphics
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T
         > (int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride = 0) where T : struct
         {
+            if (data == null)
+                throw new ArgumentNullException("data");
+
             var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
             if (vertexStride == 0)
                 vertexStride = elementSizeInBytes;
@@ -155,8 +159,7 @@ namespace Microsoft.Xna.Framework.Graphics
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T
         >(T[] data) where T : struct
         {
-            var elementSizeInByte = ReflectionHelpers.FastSizeOf<T>();
-            this.GetData<T>(0, data, 0, data.Length, elementSizeInByte);
+            this.GetData<T>(0, data, 0, data.Length, 0);
         }
 
         /// <summary>
@@ -270,7 +273,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// must be within the <paramref name="data"/> array bounds.</param>
 		public void SetData<T>(T[] data, int startIndex, int elementCount) where T : struct
         {
-            SetData(data.AsSpan(), startIndex, elementCount);
+            SetDataInternal<T>(0, data, startIndex, elementCount, 0, SetDataOptions.None);
         }
 
         /// <summary>
@@ -288,8 +291,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// must be within the <paramref name="data"/> array bounds.</param>
         public void SetData<T>(Span<T> data, int startIndex, int elementCount) where T : struct
         {
-            var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
-            SetDataInternal<T>(0, data, startIndex, elementCount, elementSizeInBytes, SetDataOptions.None);
+            SetDataInternal<T>(0, data, startIndex, elementCount, 0, SetDataOptions.None);
         }
 
         /// <summary>
@@ -301,7 +303,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="data">Data array to be passed to the shader.</param>
         public void SetData<T>(T[] data) where T : struct
         {
-            SetData(data.AsSpan());
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            SetDataInternal<T>(0, data, 0, data.Length, 0, SetDataOptions.None);
         }
 
         /// <summary>
@@ -314,15 +319,17 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <inheritdoc cref="SetData{T}(int, T[], int, int, int)" path="/remarks"/>
         public void SetData<T>(Span<T> data) where T : struct
         {
-            var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
-            SetDataInternal<T>(0, data, 0, data.Length, elementSizeInBytes, SetDataOptions.None);
+            SetDataInternal<T>(0, data, 0, data.Length, 0, SetDataOptions.None);
         }
 
         /// <summary/>
-        protected void SetDataInternal<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
+        protected void SetDataInternal<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
         {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                throw new ArgumentException($"Vertex type {typeof(T).Name} contains non-primitive or non-blittable data. This usually means the type contains class references.", nameof(data));
+
             if (data == null)
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
 
             var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
             var bufferSize = VertexCount * VertexDeclaration.VertexStride;
@@ -334,8 +341,44 @@ namespace Microsoft.Xna.Framework.Graphics
             if (vertexStride > vertexByteSize)
                 throw new ArgumentOutOfRangeException("vertexStride", "Vertex stride can not be larger than the vertex buffer size.");
 
-            if (startIndex + elementCount > data.Length || elementCount <= 0)
-                throw new ArgumentOutOfRangeException("data","The array specified in the data parameter is not the correct size for the amount of data requested.");
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (elementCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(elementCount));
+
+            if (startIndex + elementCount > data.Length)
+                throw new ArgumentOutOfRangeException(nameof(data), "The array specified in the data parameter is not the correct size for the amount of data requested.");
+            if (elementCount > 1 && (elementCount * vertexStride > bufferSize))
+                throw new InvalidOperationException("The vertex stride is larger than the vertex buffer.");
+            if (vertexStride < elementSizeInBytes)
+                throw new ArgumentOutOfRangeException("The vertex stride must be greater than or equal to the size of the specified data (" + elementSizeInBytes + ").");
+
+            PlatformSetData<T>(offsetInBytes, data, startIndex, elementCount, vertexStride, options, bufferSize, elementSizeInBytes);
+        }
+
+        /// <summary/>
+        protected void SetDataInternal<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options) where T : struct
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                throw new ArgumentException($"Vertex type {typeof(T).Name} contains non-primitive or non-blittable data. This usually means the type contains class references.", nameof(data));
+
+            var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
+            var bufferSize = VertexCount * VertexDeclaration.VertexStride;
+
+            if (vertexStride == 0)
+                vertexStride = elementSizeInBytes;
+
+            var vertexByteSize = VertexCount * VertexDeclaration.VertexStride;
+            if (vertexStride > vertexByteSize)
+                throw new ArgumentOutOfRangeException("vertexStride", "Vertex stride can not be larger than the vertex buffer size.");
+
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (elementCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(elementCount));
+
+            if (startIndex + elementCount > data.Length)
+                throw new ArgumentOutOfRangeException(nameof(data), "The array specified in the data parameter is not the correct size for the amount of data requested.");
             if (elementCount > 1 && (elementCount * vertexStride > bufferSize))
                 throw new InvalidOperationException("The vertex stride is larger than the vertex buffer.");
             if (vertexStride < elementSizeInBytes)

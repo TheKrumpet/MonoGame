@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using CppNet;
 
 namespace MonoGame.Effect

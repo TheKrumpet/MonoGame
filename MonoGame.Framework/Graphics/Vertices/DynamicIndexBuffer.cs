@@ -95,7 +95,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
         public void SetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
-            base.SetDataInternal<T>(offsetInBytes, data.AsSpan(), startIndex, elementCount, options);
+            base.SetDataInternal<T>(offsetInBytes, data, startIndex, elementCount, options);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="options">Specifies whether existing data in the buffer will be kept after this operation.</param>
         public void SetData<T>(T[] data, int startIndex, int elementCount, SetDataOptions options) where T : struct
         {
-            base.SetDataInternal<T>(0, data.AsSpan(), startIndex, elementCount, options);
+            base.SetDataInternal<T>(0, data, startIndex, elementCount, options);
         }
 
         /// <summary>

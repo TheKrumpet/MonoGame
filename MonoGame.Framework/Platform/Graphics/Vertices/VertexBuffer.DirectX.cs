@@ -73,7 +73,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _cachedStagingBuffer = new SharpDX.Direct3D11.Buffer(GraphicsDevice._d3dDevice, stagingDesc);
         }
 
-        private void PlatformGetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride) where T : struct
+        private unsafe void PlatformGetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride) where T : struct
         {
             GenerateIfRequired();
 
@@ -92,12 +92,11 @@ namespace Microsoft.Xna.Framework.Graphics
                     deviceContext.CopyResource(_buffer, _cachedStagingBuffer);
 
                 int TsizeInBytes = SharpDX.Utilities.SizeOf<T>();
-                var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-                try
+                fixed (T* dataHandle = data)
                 {
                     var startBytes = startIndex * TsizeInBytes;
-                    var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startBytes);
+                    var dataPtr = (IntPtr)dataHandle + startBytes;
 
                     lock (GraphicsDevice._d3dContext)
                     {
@@ -118,62 +117,59 @@ namespace Microsoft.Xna.Framework.Graphics
                         deviceContext.UnmapSubresource(_cachedStagingBuffer, 0);
                     }
                 }
-                finally
-                {
-                    dataHandle.Free();
-                }
             }
         }
 
-        private void PlatformSetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes) where T : struct
+        private unsafe void PlatformSetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, int vertexStride, SetDataOptions options, int bufferSize, int elementSizeInBytes) where T : struct
         {
             GenerateIfRequired();
 
-            if (_isDynamic)
+            fixed (T* dataHandle = data)
             {
-                // We assume discard by default.
-                var mode = SharpDX.Direct3D11.MapMode.WriteDiscard;
-                if ((options & SetDataOptions.NoOverwrite) == SetDataOptions.NoOverwrite)
-                    mode = SharpDX.Direct3D11.MapMode.WriteNoOverwrite;
+                var startBytes = startIndex * elementSizeInBytes;
+                var dataPtr = (IntPtr)dataHandle + startBytes;
 
-                var d3dContext = GraphicsDevice._d3dContext;
-                lock (d3dContext)
+                if (_isDynamic)
                 {
-                    var dataBox = d3dContext.MapSubresource(_buffer, 0, mode, SharpDX.Direct3D11.MapFlags.None);
-                    if (vertexStride == elementSizeInBytes)
-					{
-                        SharpDX.Utilities.Write(dataBox.DataPointer + offsetInBytes, data, startIndex, elementCount);
-                    }
-                    else
+                    // We assume discard by default.
+                    var mode = SharpDX.Direct3D11.MapMode.WriteDiscard;
+                    if ((options & SetDataOptions.NoOverwrite) == SetDataOptions.NoOverwrite)
+                        mode = SharpDX.Direct3D11.MapMode.WriteNoOverwrite;
+
+                    var d3dContext = GraphicsDevice._d3dContext;
+                    lock (d3dContext)
                     {
-                        for (int i = 0; i < elementCount; i++)
-                            SharpDX.Utilities.Write(dataBox.DataPointer + offsetInBytes + i * vertexStride, data, startIndex + i, 1);
+                        var dataBox = d3dContext.MapSubresource(_buffer, 0, mode, SharpDX.Direct3D11.MapFlags.None);
+                        if (vertexStride == elementSizeInBytes)
+                        {
+                            SharpDX.Utilities.CopyMemory(dataBox.DataPointer + offsetInBytes, dataPtr, elementCount * elementSizeInBytes);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < elementCount; i++)
+                                SharpDX.Utilities.CopyMemory(dataBox.DataPointer + offsetInBytes + i * vertexStride, dataPtr + i * elementSizeInBytes, elementSizeInBytes);
+                        }
+
+                        d3dContext.UnmapSubresource(_buffer, 0);
                     }
-
-                    d3dContext.UnmapSubresource(_buffer, 0);
                 }
-            }
-            else
-            {
-                var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                try
+                else
                 {
-                    var startBytes = startIndex * elementSizeInBytes;
-                    var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startBytes);
-
                     var d3dContext = GraphicsDevice._d3dContext;
 
                     if (vertexStride == elementSizeInBytes)
                     {
                         var box = new SharpDX.DataBox(dataPtr, elementCount * elementSizeInBytes, 0);
 
-                        var region = new SharpDX.Direct3D11.ResourceRegion();
-                        region.Top = 0;
-                        region.Front = 0;
-                        region.Back = 1;
-                        region.Bottom = 1;
-                        region.Left = offsetInBytes;
-                        region.Right = offsetInBytes + (elementCount * elementSizeInBytes);
+                        var region = new SharpDX.Direct3D11.ResourceRegion
+                        {
+                            Top = 0,
+                            Front = 0,
+                            Back = 1,
+                            Bottom = 1,
+                            Left = offsetInBytes,
+                            Right = offsetInBytes + (elementCount * elementSizeInBytes)
+                        };
 
                         lock (d3dContext)
                             d3dContext.UpdateSubresource(box, _buffer, 0, region);
@@ -203,10 +199,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             d3dContext.CopyResource(_cachedStagingBuffer, _buffer);
                         }
                     }
-                }
-                finally
-                {
-                    dataHandle.Free();
                 }
             }
         }

@@ -1198,13 +1198,6 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
         }
 
-        private void PlatformDrawUserPrimitives<T>(
-            PrimitiveType primitiveType, T[] vertexData, int vertexOffset, VertexDeclaration vertexDeclaration, int vertexCount)
-            where T : struct
-        {
-            PlatformDrawUserPrimitives(primitiveType, vertexData.AsSpan(), vertexOffset, vertexDeclaration, vertexCount);
-        }
-
         private unsafe void PlatformDrawUserPrimitives<T>(
             PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, VertexDeclaration vertexDeclaration, int vertexCount)
             where T : struct
@@ -1261,9 +1254,9 @@ namespace Microsoft.Xna.Framework.Graphics
             _indexBufferDirty = true;
 
             fixed (T* vbHandle = vertexData)
-            fixed(short* ibHandle = indexData)
+            fixed (short* ibHandle = indexData)
             {
-                var vertexAddr = (IntPtr)(vbHandle + vertexDeclaration.VertexStride * vertexOffset);
+                var vertexAddr = (IntPtr)vbHandle + vertexDeclaration.VertexStride * vertexOffset;
 
                 // Setup the vertex declaration to point at the VB data.
                 vertexDeclaration.GraphicsDevice = this;
@@ -1274,12 +1267,12 @@ namespace Microsoft.Xna.Framework.Graphics
                     PrimitiveTypeGL(primitiveType),
                     GetElementCountArray(primitiveType, primitiveCount),
                     DrawElementsType.UnsignedShort,
-                    (IntPtr)(ibHandle + (indexOffset * sizeof(short))));
+                    (IntPtr)ibHandle + (indexOffset * sizeof(short)));
                 GraphicsExtensions.CheckGLError();
             }
         }
 
-        private void PlatformDrawUserIndexedPrimitives<T>(
+        private unsafe void PlatformDrawUserIndexedPrimitives<T>(
             PrimitiveType primitiveType, Span<T> vertexData, int vertexOffset, int numVertices, Span<int> indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration)
             where T : struct
         {
@@ -1292,14 +1285,10 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
             _indexBufferDirty = true;
 
-
-
-            // Pin the buffers.
-            var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
-            var ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
-            try
+            fixed (T* vbHandle = vertexData)
+            fixed (int* ibHandle = indexData)
             {
-                var vertexAddr = (IntPtr)(vbHandle.AddrOfPinnedObject().ToInt64() + vertexDeclaration.VertexStride * vertexOffset);
+                var vertexAddr = (IntPtr)vbHandle + vertexDeclaration.VertexStride * vertexOffset;
 
                 // Setup the vertex declaration to point at the VB data.
                 vertexDeclaration.GraphicsDevice = this;
@@ -1310,14 +1299,8 @@ namespace Microsoft.Xna.Framework.Graphics
                     PrimitiveTypeGL(primitiveType),
                     GetElementCountArray(primitiveType, primitiveCount),
                     DrawElementsType.UnsignedInt,
-                    (IntPtr)(ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(int))));
+                    (IntPtr)ibHandle + (indexOffset * sizeof(int)));
                 GraphicsExtensions.CheckGLError();
-            }
-            finally
-            {
-                // Release the handles.
-                ibHandle.Free();
-                vbHandle.Free();
             }
         }
 

@@ -91,7 +91,6 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
         }
 #endif
-
         private void PlatformSetData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, SetDataOptions options)
             where T : struct
         {
@@ -101,6 +100,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 offsetInBytes = offsetInBytes,
                 data = data,
                 startIndex = startIndex,
+                elementCount = elementCount,
+                options = options
+            });
+        }
+
+        private void PlatformSetData<T>(int offsetInBytes, Span<T> data, int startIndex, int elementCount, SetDataOptions options)
+            where T : struct
+        {
+            Threading.BlockOnUIThread(SetDataState<T>.Action, new SetDataState<T>
+            {
+                buffer = this,
+                offsetInBytes = offsetInBytes,
+                data = data.Slice(startIndex, elementCount).ToArray(),
+                startIndex = 0,
                 elementCount = elementCount,
                 options = options
             });

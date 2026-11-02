@@ -48,19 +48,6 @@ public partial class VertexBuffer
         SetDataInternal<T>(destinationStartIndex, data, data.Length, SetDataOptions.None);
     }
 
-    /// <summary>
-    /// Sets the vertex buffer data. This is the same as calling <see cref="SetData{T}(int, Span{T})"/>
-    /// with <c>destinationStartIndex</c> equal to <c>0</c>
-    /// </summary>
-    /// <typeparam name="T">Type of elements in the data array.</typeparam>
-    /// <param name="data">Data Span to be passed to the shader.</param>
-    /// <inheritdoc cref="SetData{T}(int, Span{T})" path="/remarks"/>
-    public void SetData<T>(Span<T> data) where T : struct
-    {
-        var elementSizeInBytes = ReflectionHelpers.FastSizeOf<T>();
-        SetDataInternal<T>(0, data, data.Length, SetDataOptions.None);
-    }
-
     /// <summary/>
     protected void SetDataInternal<T>(int destinationStartIndex, Span<T> data, int elementCount, SetDataOptions options) where T : struct
     {

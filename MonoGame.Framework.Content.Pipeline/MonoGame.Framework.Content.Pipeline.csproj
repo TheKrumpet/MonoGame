@@ -111,12 +111,6 @@
     <ProjectReference Include="..\MonoGame.Framework\MonoGame.Framework.Native.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <!-- NU5100 - NuGet warns if we copy assemblies but don't reference them; we suppress those warnings. -->
-    <!-- CS1591 - Disable XML documentation warnings. -->
-    <NoWarn>NU5100;CS1591</NoWarn>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>0</WarningLevel>
   </PropertyGroup>
